@@ -103,7 +103,6 @@ app.post('/signup', (req, res, next) => {
       res.status(200).redirect('/');
     })
     .error(error => {
-      console.log('now in the error');
       res.status(500).send(error);
     })
     .catch(() => { });
@@ -118,8 +117,6 @@ app.post('/login', (req, res, next) => {
   //check if username exists
   models.Users.get({ username: req.body.username })
     .then((userObject) => {
-      console.log('LOGGING USER INFO');
-      console.log(userObject);
       if (userObject === undefined) {
         throw '';
       }
@@ -138,7 +135,6 @@ app.post('/login', (req, res, next) => {
     })
     .catch(() => {
       res.redirect('/login');
-      console.log('fell into the catch');
     });
 
   //get the salted password off the database

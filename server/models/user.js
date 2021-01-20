@@ -20,7 +20,14 @@ class Users extends Model {
    * @returns {boolean} A boolean indicating if the attempted password was correct.
    */
   compare(attempted, password, salt) {
-    return utils.compareHash(attempted, password, salt);
+    console.log('trying to compare');
+    console.log(attempted);
+    console.log(password);
+    console.log(salt);
+    var comparison = utils.compareHash(attempted, password, salt);
+    console.log(comparison);
+    console.log('finished comparing');
+    return comparison;
   }
 
   /**

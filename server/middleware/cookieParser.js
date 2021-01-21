@@ -1,5 +1,4 @@
 const parseCookies = (req, res, next) => {
-  console.log(req.header('Cookie'));
   let cookieHeader = req.header('Cookie');
   if (!cookieHeader) {
     req.cookies = {};

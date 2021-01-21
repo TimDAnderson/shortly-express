@@ -103,12 +103,24 @@ app.post('/signup', (req, res, next) => {
       }
     })
     .then(() => {
+      return models.Users.get({
+        username: req.body.username
+      });
+    })
+    .then(user => {
+      return models.Sessions.update({
+        hash: req.session.hash
+      }, { userId: user.id });
+    })
+    .then(rowsAffected => {
       res.status(200).redirect('/');
     })
     .error(error => {
       res.status(500).send(error);
     })
-    .catch(() => { });
+    .catch(err => {
+      console.error(err);
+    });
 
   //logging in or remaining logged in?
 });
@@ -144,6 +156,21 @@ app.post('/login', (req, res, next) => {
   //check if password is correct using the compare method
   //return cookie?
 
+
+});
+
+app.get('/logout', (req, res, next) => {
+  //req object should have session object
+  //req object should have cookie object
+
+  //remove the session from the session table
+  //logs them out
+  //use the delete method in models.js
+  //delete takes in options object where the keys are column and
+  //the values are the current values
+  console.log('need to pass hash to delete');
+  console.log(req.session);
+  models.Sessions.delete({hash: req.session.hash});
 
 });
 

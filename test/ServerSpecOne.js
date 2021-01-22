@@ -60,24 +60,15 @@ describe('', function () {
     afterEach(function () { server.close(); });
   });
 
-  describe('Express Middleware', function () {
-    var cookieParser = require('../server/middleware/cookieParser.js');
-    var createSession = require('../server/middleware/auth.js').createSession;
+  describe('Privileged Access:', function () {
 
-    describe('Session Parser', function () {
-
-      it('clears and reassigns a new cookie if there is no session assigned to the cookie', function (done) {
-        var maliciousCookieHash = '8a864482005bcc8b968f2b18f8f7ea490e577b20';
-        var response = httpMocks.createResponse();
-        var requestWithMaliciousCookie = httpMocks.createRequest();
-        requestWithMaliciousCookie.cookies.shortlyid = maliciousCookieHash;
-
-        createSession(requestWithMaliciousCookie, response, function () {
-          var cookie = response.cookies.shortlyid;
-          expect(cookie).to.exist;
-          expect(cookie).to.not.equal(maliciousCookieHash);
-          done();
-        });
+    it('Redirects to login page if a user tries to access the main page and is not signed in', function (done) {
+      request('http://127.0.0.1:4568/', function (error, res, body) {
+        console.log('finished getting index');
+        // console.log(res.req.path);
+        if (error) { return done(error); }
+        expect(res.req.path).to.equal('/login');
+        done();
       });
     });
   });

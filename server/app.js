@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const Auth = require('./middleware/auth');
 const cookieParser = require('./middleware/cookieParser');
 const models = require('./models');
+const login = require('./middleware/login');
 
 const app = express();
 
@@ -19,18 +20,17 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use(cookieParser);
 app.use(Auth.createSession);
 
-
-app.get('/',
+app.get('/', Auth.verifySession,
   (req, res) => {
     res.render('index');
   });
 
-app.get('/create',
+app.get('/create', Auth.verifySession,
   (req, res) => {
     res.render('index');
   });
 
-app.get('/links',
+app.get('/links', Auth.verifySession,
   (req, res, next) => {
     models.Links.getAll()
       .then(links => {
@@ -123,41 +123,14 @@ app.post('/signup', (req, res, next) => {
     });
 
   //logging in or remaining logged in?
+}, login);
+
+app.get('/login', (req, res, next) => {
+  res.render('index');
 });
-
-
 
 //post login
-app.post('/login', (req, res, next) => {
-  //check if username exists
-  models.Users.get({ username: req.body.username })
-    .then((userObject) => {
-      if (userObject === undefined) {
-        throw '';
-      }
-
-      return models.Users.compare(req.body.password, userObject.password, userObject.salt);
-    })
-    .then(isMatch => {
-      if (isMatch) {
-        res.redirect('/');
-      } else {
-        throw '';
-      }
-    })
-    .error(error => {
-      res.status(500).send(error);
-    })
-    .catch(() => {
-      res.redirect('/login');
-    });
-
-  //get the salted password off the database
-  //check if password is correct using the compare method
-  //return cookie?
-
-
-});
+app.post('/login', login);
 
 app.get('/logout', (req, res, next) => {
   //req object should have session object
@@ -176,6 +149,7 @@ app.get('/logout', (req, res, next) => {
       res.redirect('/');
     })
     .catch((err)=>{
+      console.log('in the catch get login loop');
       console.error(err);
       res.redirect('/');
     });

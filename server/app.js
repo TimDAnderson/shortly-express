@@ -168,9 +168,17 @@ app.get('/logout', (req, res, next) => {
   //use the delete method in models.js
   //delete takes in options object where the keys are column and
   //the values are the current values
-  console.log('need to pass hash to delete');
-  console.log(req.session);
-  models.Sessions.delete({hash: req.session.hash});
+  models.Sessions.delete({hash: req.session.hash})
+    .then(()=>{
+      res.header('Set-Cookie', 'shortlyid=' + '');
+    })
+    .then(()=>{
+      res.redirect('/');
+    })
+    .catch((err)=>{
+      console.error(err);
+      res.redirect('/');
+    });
 
 });
 

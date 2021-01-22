@@ -12,13 +12,18 @@ module.exports.createSession = (req, res, next) => {
           // this cookie is invalid
           models.Sessions.create()
             .then(result => {
-              res.header('Set-Cookie', result.hash);
+              if (!res.headersSent) {
+                res.header('Set-Cookie', 'shortlyid=' + result.hash);
+              }
 
               // add the session property to req
-              req.session = {hash: result.hash};
+              req.session = { hash: result.hash };
 
-              res.cookies = {shortlyid: {value: result.hash}};
+              res.cookies = { shortlyid: { value: result.hash } };
               next();
+            })
+            .catch((err) => {
+              console.error(err);
             });
         } else {
           // valid cookie
@@ -31,20 +36,21 @@ module.exports.createSession = (req, res, next) => {
           //run it through our database
           //tell us the id and password
           //this get assigned to the session object
+          next();
         }
-        next();
       });
   } else {
     // if no cookie
     // generate a session with a unique hash and store in sessions database
     models.Sessions.create()
       .then(result => {
-        res.header('Set-Cookie', result.hash);
-
+        if (!res.headersSent) {
+          res.header('Set-Cookie', 'shortlyid=' + result.hash);
+        }
         // add the session property to req
-        req.session = {hash: result.hash};
+        req.session = { hash: result.hash };
 
-        res.cookies = {shortlyid: {value: result.hash}};
+        res.cookies = { shortlyid: { value: result.hash } };
         next();
       });
   }

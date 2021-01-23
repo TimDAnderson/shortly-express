@@ -8,3 +8,6 @@ docs
 .floobit
 .floo
 .flooignore
+
+#untracked files
+server/API_keys.js

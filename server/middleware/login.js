@@ -4,6 +4,7 @@ var user;
 
 var loginMiddleware = (req, res, next) => {
   //check if username exists
+  console.log('now started login middleware');
   models.Users.get({ username: req.body.username })
     .then((userObject) => {
       if (userObject === undefined) {
@@ -11,17 +12,22 @@ var loginMiddleware = (req, res, next) => {
       }
 
       user = userObject;
-      return models.Users.compare(req.body.password, userObject.password, userObject.salt);
+      // return models.Users.compare(req.body.password, userObject.password, userObject.salt);
+      console.log('about to update session');
+      console.log(`username: ${userObject.username} user id: ${userObject.id}`);
+      return models.Sessions.update({
+        hash: req.session.hash
+      }, {userId: user.id});
     })
-    .then(isMatch => {
-      if (isMatch) {
-        return models.Sessions.update({
-          hash: req.session.hash
-        }, {userId: user.id});
-      } else {
-        throw '';
-      }
-    })
+    // .then(isMatch => {
+    //   if (isMatch) {
+    //     return models.Sessions.update({
+    //       hash: req.session.hash
+    //     }, {userId: user.id});
+    //   } else {
+    //     throw '';
+    //   }
+    // })
     .then(() => {
       console.log('now redirecting');
       res.redirect('/');

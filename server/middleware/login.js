@@ -3,8 +3,8 @@ const models = require('../models');
 var user;
 
 var loginMiddleware = (req, res, next) => {
-  //check if username exists
   console.log('now started login middleware');
+  console.log(req.body.username);
   models.Users.get({ username: req.body.username })
     .then((userObject) => {
       if (userObject === undefined) {
@@ -12,22 +12,12 @@ var loginMiddleware = (req, res, next) => {
       }
 
       user = userObject;
-      // return models.Users.compare(req.body.password, userObject.password, userObject.salt);
       console.log('about to update session');
       console.log(`username: ${userObject.username} user id: ${userObject.id}`);
       return models.Sessions.update({
         hash: req.session.hash
       }, {userId: user.id});
     })
-    // .then(isMatch => {
-    //   if (isMatch) {
-    //     return models.Sessions.update({
-    //       hash: req.session.hash
-    //     }, {userId: user.id});
-    //   } else {
-    //     throw '';
-    //   }
-    // })
     .then(() => {
       console.log('now redirecting');
       res.redirect('/');
@@ -35,14 +25,11 @@ var loginMiddleware = (req, res, next) => {
     .error(error => {
       res.status(500).send(error);
     })
-    .catch(() => {
+    .catch(err => {
+      console.error(err);
       console.log('in the catch post login loop');
       res.redirect('/login');
     });
-
-  //get the salted password off the database
-  //check if password is correct using the compare method
-  //return cookie?
 };
 
 module.exports = loginMiddleware;

@@ -97,7 +97,7 @@ app.get('/auth/github',
 //   which, in this example, will redirect the user to the home page.
 app.get('/auth/github/callback',
   passport.authenticate('github', { failureRedirect: '/login' }),
-  function (req, res) {
+  function (req, res, next) {
     //res.redirect('/'); //around this spot we're routing back into our app from github.  Now we can query db for existing user
     console.log('now in the auth github callback route');
     models.Users.get({ username: globalUsername })
@@ -117,8 +117,10 @@ app.get('/auth/github/callback',
       })
       .then(()=>{
         console.log('finished checking user table');
+        console.log(globalUsername);
         req.session.user = globalUsername;
-        console.log(`typeof login: ${typeof login} login: ${login}`);
+        req.body.username = globalUsername;
+        next();
       });
   }, login);
 

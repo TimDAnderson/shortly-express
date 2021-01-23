@@ -732,6 +732,29 @@ describe('', function() {
         });
       });
 
+
+      it('should increment the visit count in the links table', function(done) {
+        var visitsBefore;
+        var visitsAfter;
+        db.query('select visits from links where code = ?', [link.code], (error, results, fields) => {
+          visitsBefore = results[0].visits;
+          var options = {
+            'method': 'GET',
+            'uri': 'http://127.0.0.1:4568/' + link.code
+          };
+
+          requestWithSession(options, function(error, res, body) {
+            if (error) { return done(error); }
+            db.query('select visits from links where code = ?', [link.code], (error, results, fields) => {
+              visitsAfter = results[0].visits;
+              console.log(`visits before: ${visitsBefore} visits after: ${visitsAfter}`);
+              expect(visitsBefore).to.equal(visitsAfter - 1);
+              done();
+            });
+          });
+        });
+      });
+
       it('Shortcode redirects to index if shortcode does not exist', function(done) {
         var options = {
           'method': 'GET',
@@ -760,5 +783,94 @@ describe('', function() {
         });
       });
     });
+
+
+
+    //logout tests
+    describe('logout functionality:', function() {
+      var loggedinCookie;
+      var loggedoutCookie;
+
+      //after loogging we get redirected, check the session object for user
+      beforeEach(function(done) {
+        var options = {
+          'method': 'POST',
+          'uri': 'http://127.0.0.1:4568/signup',
+          'json': {
+            'username': 'Samantha',
+            'password': 'Samantha'
+          }
+        };
+
+
+        request(options, function(error, res, body) {
+          loggedinCookie = res.request.req.res.headers['set-cookie'][0];
+          console.log(loggedinCookie);
+          done(error);
+        });
+      });
+
+      it('should have a shortlyid cookie of "" after logging out', function (done) {
+        var options = {
+          'method': 'GET',
+          'uri': 'http://127.0.0.1:4568/logout'
+        };
+
+        requestWithSession(options, function(error, res, body) {
+          if (error) { return done(error); }
+          loggedoutCookie = res.request.headers.cookie;
+          console.log(loggedinCookie);
+          console.log(loggedoutCookie);
+          // console.log(res.request);
+          // expect(body).to.include('"title":"Google"');
+          expect(loggedinCookie).to.not.equal(loggedoutCookie);
+          done();
+        });
+      });
+
+
+    });
+
+
+
+    //after signing up the cookie we have should be associated with the user in the sessions table
+    describe('validating cookie while logged in', function() {
+      var loggedinCookie;
+      var username = 'Samantha';
+
+      //after loogging we get redirected, check the session object for user
+      beforeEach(function(done) {
+        var options = {
+          'method': 'POST',
+          'uri': 'http://127.0.0.1:4568/signup',
+          'json': {
+            'username': username,
+            'password': 'Samantha'
+          }
+        };
+
+
+        request(options, function(error, res, body) {
+          loggedinCookie = res.request.req.res.headers['set-cookie'][0];
+          done(error);
+        });
+      });
+
+      it('should have a logged in cookie that matches a table lookup', function (done) { //matching the cookie to user id in the sessions table
+        db.query('select hash from sessions inner join users on sessions.userId = users.id where users.username = ?', [username], (error, results, fields) => {
+          let trimmedCookie = loggedinCookie.split('=')[1];
+          expect(trimmedCookie).to.equal(results[0].hash);
+          done();
+        });
+      });
+
+
+    });
+
+
+    //confirm that visits column is updating after the site is accessed through shortly
+
+
   });
 });
+

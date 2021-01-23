@@ -103,17 +103,7 @@ app.post('/signup', (req, res, next) => {
       }
     })
     .then(() => {
-      return models.Users.get({
-        username: req.body.username
-      });
-    })
-    .then(user => {
-      return models.Sessions.update({
-        hash: req.session.hash
-      }, { userId: user.id });
-    })
-    .then(rowsAffected => {
-      res.status(200).redirect('/');
+      next();
     })
     .error(error => {
       res.status(500).send(error);
@@ -149,7 +139,6 @@ app.get('/logout', (req, res, next) => {
       res.redirect('/');
     })
     .catch((err)=>{
-      console.log('in the catch get login loop');
       console.error(err);
       res.redirect('/');
     });

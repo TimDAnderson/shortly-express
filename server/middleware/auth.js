@@ -66,28 +66,11 @@ module.exports.createSession = (req, res, next) => {
 /************************************************************/
 
 module.exports.verifySession = (req, res, next) => {
-  console.log('verifying session');
-  console.log(req.session);
-  console.log(req.session.user);
-  //what are se expecting on this session object
-  // should we expect the path to be login?
-  console.log('the path was: ' + req.originalUrl);
-  //
-
   // only call next if user is logged in.
   if (req.session.user === undefined) {
-    console.log('redirecting to login');
     res.redirect('/login');
   } else {
-    console.log('going to next middleware');
     next();
   }
 };
 
-// app.post('/links', Auth.verifySession);
-//
-// app.post('/links',
-//   (req, res, next) => {
-//       // all the rest of the route here
-//   }
-// ))

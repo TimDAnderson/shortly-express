@@ -1,3 +1,7 @@
+const models = require('../models');
+
+var user;
+
 var loginMiddleware = (req, res, next) => {
   //check if username exists
   models.Users.get({ username: req.body.username })
@@ -6,14 +10,21 @@ var loginMiddleware = (req, res, next) => {
         throw '';
       }
 
+      user = userObject;
       return models.Users.compare(req.body.password, userObject.password, userObject.salt);
     })
     .then(isMatch => {
       if (isMatch) {
-        res.redirect('/');
+        return models.Sessions.update({
+          hash: req.session.hash
+        }, {userId: user.id});
       } else {
         throw '';
       }
+    })
+    .then(() => {
+      console.log('now redirecting');
+      res.redirect('/');
     })
     .error(error => {
       res.status(500).send(error);
